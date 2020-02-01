@@ -1,0 +1,20 @@
+ <h3>{{viewTitle}}</h3>
+<form action="/configuration" method="POST" autocomplete="off">
+<input type="hidden" name="_id" value="{{configuration._id}}">
+    <div class="form-group">
+        <label>Finance Rate</label>
+        <input type="text" class="form-control" name="financerate" placeholder="Finance Rate" value="{{configuration.financerate}}">
+    </div>
+    <div class="form-group">
+        <label>Down Payment</label>
+        <input type="number" min="0" max="100" class="form-control" name="downpayment" placeholder="Down Payment" value="{{configuration.downpayment}}">
+    </div>
+    <div class="form-group">
+        <label>Deadline</label>
+        <input type="number" min="3" max="12" class="form-control" name="deadline" placeholder="Deadline" value="{{configuration.deadline}}">
+    </div>
+    <div class="form-group">
+        <a class="btn btn-secondary" href="/"><i ></i>Cancel</a>
+        <button type="submit" class="btn btn-info"><i ></i>Save</button>
+    </div>
+</form>

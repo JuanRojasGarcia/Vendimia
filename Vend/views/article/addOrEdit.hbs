@@ -1,0 +1,35 @@
+<h3>{{viewTitle}}</h3>
+
+<form action="/article" method="POST" autocomplete="off">
+<input type="hidden" name="_id" value="{{article._id}}">
+    <div class="form-group">
+        <label>Description</label>
+        <input type="text" class="form-control" name="description" placeholder="Description" value="{{article.description}}">
+        <div class="text-danger">
+            {{article.descriptionError}}
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Model</label>
+        <input type="text" class="form-control" name="model" placeholder="Model" value="{{article.model}}">
+    </div>
+    <div class="form-group">
+        <label>Price</label>
+        <input type="text" class="form-control" name="price" placeholder="Price" value="{{article.price}}">
+        <div class="text-danger">
+            {{article.priceError}}
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Stock</label>
+        <input type="text" class="form-control" name="stock" placeholder="Stock" value="{{article.stock}}">
+        <div class="text-danger">
+            {{article.stockError}}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <a class="btn btn-secondary" href="/article/list"><i ></i>Cancel</a>
+        <button type="submit" class="btn btn-info"><i ></i>Save</button>
+    </div>
+</form>

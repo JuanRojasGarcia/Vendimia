@@ -1,0 +1,545 @@
+<h3>{{viewTitle}}</h3>
+ <div class="container">
+        <div id="divList" class="container">
+            <div class="row justify-content-end mt-1">
+                <div class="col-lg-4">
+                    <button class="btn btn-primary" id="btnNewSale">New Sale</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3">
+                </div>
+                <div class="col-lg-4 text-black font-weight-bold">Active Sales</div>
+            </div>
+            <div class="row mt-3">
+                <table class="table text-black">
+                    <thead>
+                        <tr>
+                            <th scope="col"># Sale</th>
+                            <th scope="col"># Customer</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">TestOnly</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="divForm" class="container text-black d-none">
+            <div>
+                <br>
+                <form id="form" autocomplete="off">
+                    <div class="form-group row">
+                        <div class="col input-group mb-3">
+                            <div class="">
+                                <input required type="text" class="form-control" id="inputCustomer" placeholder="Customer"></input>
+                            </div>
+                            <select class="input-group-append custom-select" id="selectCustomer">
+                                <option value="placeholder" selected>Choose...</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <span id="rfc">RFC:</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col input-group mb-3">
+                            <div class="">
+                                    <input type="text" class="form-control" id="inputArticle" placeholder="Article">
+                            </div>
+                            <select class="input-group-append custom-select" id="selectArticle">
+                                <option value="" selected>Choose...</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" id="btnAddArticle">+</button>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <table class="table text-black">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Model</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Amount</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyForm">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="container text-black">
+                        <div class="row">
+                            <div class="col-lg-8"></div>
+                            <div class="col-lg-4 container">
+                                <div class="row">
+
+                                    <div class="col-lg-7">
+                                        <p class="">Down Payment:</p>
+                                        <p class="">Down Payment Bonus:</p>                    
+                                        <p class="">Total:</p>                    
+                                        
+                                    </div>
+                                    <div class="col-lg-5">
+                                        <p class="text-right pr-4" id="downpayment">0</p>
+                                        <p class="text-right pr-4" id="dpbonus">0</p>
+                                        <p class="text-right pr-4" id="total">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="divNext" class="container d-none">
+                        <table class="table text-black">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Payment</th>
+                                    <th>Total Amount</th>
+                                    <th>Saving</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyPayments">
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-10"></div>
+                        <div>
+                            <button type="button" class='btn btn-danger' id="cancel">Cancel</button>
+                            <button type="reset" class='btn btn-secondary' id="reset">Reset</button>
+                            <button type="submit" class='btn btn-primary'>Next</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-2"></div>
+            <br>
+            <div class="row">
+                <div class="col-lg-2"></div>
+                <div class="col-lg-8">
+                    <div class="alert" role="alert" id = "message"></div>
+                </div>
+                <div class="col-lg-2"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script>
+         $(document).ready(() => {
+            const d = new Date()
+            const form = $('#form')
+            let step = 1
+            const inputCustomer = $('#inputCustomer')
+            const selectCustomer = $('#selectCustomer')
+            
+            const inputArticle = $('#inputArticle')
+            const selectArticle = $('#selectArticle')
+            let configuration = null;
+            let paymentChoice = []
+            
+            const getConfig = async () => {
+                const wait = await fetch('/getConfig', {method: "get"}).then((response) => (response.json())).then((data) => {
+                    configuration = data[0];
+                    
+                })
+                return await wait
+            }
+
+            $('#date').html(`Date: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`)
+
+            $('#reset').click(() => {
+                $('#tableBodyForm').html('')
+                $('#rfc').html('RFC: ')
+                inputCustomer.prop('disabled', false)
+                selectCustomer.prop('disabled', false)
+            })
+
+            $('#btnNewSale').click(() => {
+                $('#downpayment').html('0')
+                $('#dpbonus').html('0')
+                $('#total').html('0')
+                step = 1
+                paymentChoice = []
+                inputCustomer.prop('disabled', false)
+                selectCustomer.prop('disabled', false)
+                inputArticle.prop('disabled', false)
+                selectArticle.prop('disabled', false)
+                resetSelect(selectCustomer)
+                inputCustomer.val('')
+                $('#reset').prop('disabled', false)
+                form.trigger('reset')
+                $('#divNext').addClass('d-none')
+                $('#divForm').removeClass('d-none')
+                $('#divList').addClass('d-none')
+            })
+
+            $('#cancel').click(() => {
+                $('#rfc').html('RFC: ')
+                $('#tableBodyForm').html('')
+                $('#divList').removeClass('d-none')
+                $('#divForm').addClass('d-none')
+                getSales()
+            })
+
+            $('#btnAddArticle').click(() => {
+                if(selectArticle.val() == '') return
+                const article = selectArticle.val()
+                inputArticle.prop('disabled', false)
+                selectArticle.prop('disabled', false)
+                inputArticle.val('')
+                resetSelect(selectArticle)
+                const tbody = $('#tableBodyForm')
+                let flag = false
+                if(tbody[0].childNodes && tbody[0].childNodes.length != 0){
+                    tbody[0].childNodes.forEach((tr) => {
+                        flag = tr.id == 'row_'+ article
+                        if(flag) return
+                    })
+                }
+                if(flag) return
+                fetch(`/getArticle/${article}`, {method : 'get'}).then((response) => (response.json())).then((data) => {
+                    const ids = buildIDS(data[0])
+                    tbody.append(saleFormTemplate(data[0], ids))
+                    setQuantity(ids.qtyID, ids.priceID, ids.amountID)
+                    removeArticle(ids.rowID, ids.deleteID)
+                })
+            })
+
+            form.submit(async(e) => {
+                e.preventDefault()
+                hideMessage()
+                //if($('#total').html() == '0') return
+                if($('#selectCustomer option:selected').val() == 'placeholder') {
+                    displayMessage(false, 'You need to select a customer from the selector')
+                    return
+                }
+                if(step == 1){
+                    if(!qtyOverZero()){
+                        displayMessage(false, 'You cannot set Quantity to less than 1')
+                        return
+                    }
+                    let allGood = true
+                    let wait = null
+                    await $('.qty').each(async(_, obj) => {
+                        const inputQty = $(obj)
+                        const articleID = inputQty[0].id.substring(4)
+                        wait = fetch(`/getarticle/${articleID}`, {method : 'get'}).then((response) => (response.json())).then((data) => {
+                            if(data[0].stock < inputQty.val()) allGood = false
+                        })
+                    })
+                    await wait
+                    if(!allGood) {
+                        console.log('fs');
+                        displayMessage(false, 'You are trying to sell more than what you have')
+                        return
+                    }
+                    $('#divNext').removeClass('d-none')
+                    $('#reset').prop('disabled', true)
+                    //disable stuff and show second table
+                    inputArticle.prop('disabled', true)
+                    inputCustomer.prop('disabled', true)
+                    selectArticle.prop('disabled', true)
+                    $('.qty').each((_, obj) => {
+                        $(obj).prop('disabled', true)
+                    })
+                    displayPayments()
+                    step++
+                }
+                else{
+                    const index = $('input[name="payment"]:checked').val();
+                    if(!index) {
+                        displayMessage(false, 'You need to select one payment plan')
+                        return
+                    }
+                    const total = paymentChoice[index].totalAmount
+                    const customerName = inputCustomer.val()
+                    const customerID = selectCustomer.val()
+                    const date = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`
+                    console.log(customerID, customerName, total, date);
+                    fetch('/sales', {
+                        method : 'post',
+                        body : JSON.stringify({
+                            customer : customerID,
+                            customername : customerName,
+                            total : total,
+                            date : date
+                        }),
+                        headers : {'Content-Type' : 'application/json; charset=utf-8'}
+                    }).then((response) => (response.json())).then((data) => {
+                        displayMessage(true, 'You have successfully registered this sale')
+                    })
+
+                    $('.qty').each((_, obj) => {
+                        const inputQty = $(obj)
+                        const articleID = inputQty[0].id.substring(4)
+                        fetch(`/getarticle/${articleID}`, {method : 'get'}).then((response) => (response.json())).then((data) => {
+                            fetch(`/articleStock/${articleID}`, {
+                                method : 'put',
+                                body : JSON.stringify({stock: data[0].stock - inputQty.val()}),
+                                headers : {'Content-Type' : 'application/json; charset=utf-8'}
+                            })
+                        })
+                    })
+                    //hide second table
+                    //reset
+                }
+            })
+
+            const qtyOverZero = () => {
+                let flag = true
+                $('.qty').each((_, obj) => {
+                    if(parseInt($(obj).val()) < 1) {
+                        flag = false
+                        return
+                    }
+                })
+                return flag
+            }
+
+            const setQuantity = (qtyID, priceID, amountID) => {
+                const qtyInput = $(`#${qtyID}`)
+                qtyInput.on('input', (e) => {
+                    e.preventDefault()
+                    const amountCell = $(`#${amountID}`)
+                    const price = $(`#${priceID}`)
+                    amountCell.html(qtyInput.val() * price.html())
+                    calculateTotal()
+                })
+            }
+
+            const calculateTotal = () => {
+                let amountSum = 0
+                $('.rowAmount').each((_, obj) => {
+                    amountSum += parseInt( $(obj).html() )
+                })
+                const downpayment = amountSum * configuration.downpayment / 100
+                const dpbonus = downpayment * configuration.financerate * configuration.deadline / 100
+                const total = amountSum - downpayment - dpbonus
+                $('#downpayment').html(downpayment)
+                $('#dpbonus').html(dpbonus)
+                $('#total').html(total)
+            }
+
+            inputCustomer.on('input', (e) => {
+                e.preventDefault()
+                resetSelect(selectCustomer)
+                if(inputCustomer.val().length < 3) return
+                fetch('/sale/customerSuggestion', {
+                    method : 'put',
+                    body : JSON.stringify({
+                        name : inputCustomer.val()
+                    }),
+                    headers: {'Content-Type' : 'application/json; charset=utf-8'}
+                }).then((response) => (response.json())).then((data) => {
+                    if(data.length != 0)
+                        selectCustomer.append(customerSuggestionTemplate(data[0]))
+                })
+            })
+
+            const resetSelect = (select) => {
+                select.empty()
+                select.append('<option value="placeholder" selected>Choose...</option>')
+            }
+
+            inputArticle.on('input', (e) => {
+                e.preventDefault()
+                resetSelect(selectArticle)
+                if(inputArticle.val().length < 3) return
+                fetch('/sale/articleSuggestion', {
+                    method : 'put',
+                    body : JSON.stringify({
+                        description : inputArticle.val()
+                    }),
+                    headers: {'Content-Type' : 'application/json; charset=utf-8'}
+                }).then((response) => (response.json())).then((data) => {
+                    if(data.length != 0)
+                        selectArticle.append(articleSuggestionTemplate(data[0]))
+                })
+            })
+
+            selectCustomer.change(async () => {
+                inputCustomer.val($('#selectCustomer option:selected').text())
+                inputCustomer.prop('disabled', true)
+                selectCustomer.prop('disabled', true)
+                $('#rfc').html(`RFC: ${await getRFC($('#selectCustomer option:selected').val())}`)
+                
+            })
+
+            const getRFC = async (customerID) => {
+                let rfc = null
+                let wait = fetch(`/getCustomer/${customerID}`, {method: "get"}).then((response) => (response.json())).then((data) => {
+                    rfc = data[0].rfc
+                })
+                await wait
+                return rfc
+            }
+
+            selectArticle.change(() => {
+                if(selectArticle.val() == '') return
+                inputArticle.val($('#selectArticle option:selected').text())
+                inputArticle.prop('disabled', true)
+                selectArticle.prop('disabled', true)
+            })
+
+            const customerSuggestionTemplate = (customer) => {
+                return `
+                    <option value = '${customer._id}'>${customer.name} ${customer.lastnameone} ${customer.lastnametwo}</option>
+                `
+            }
+
+            const articleSuggestionTemplate = (article) => {
+                
+                return `
+                    <option value = '${article._id}'>${article.description}</option>
+                `
+            }
+
+            const init = async () => {
+                getSales()
+                await getConfig()
+            }
+
+            const buildIDS = (object) => {
+                return {
+                    editID : "edit_" + object._id,
+                    deleteID : "delete_" + object._id,
+                    rowID : "row_" + object._id,
+                    qtyID : 'qty_' + object._id,
+                    priceID : 'price_' + object._id,
+                    amountID : 'amount_' + object._id
+                }
+            }
+
+
+            const getSales = () => {
+                fetch('/getSales', {method: "get"}).then((response) => (response.json())).then((data) => {
+                    displaySales(data)
+                })
+            }
+
+            const saleListTemplate = (sale, ids) => (
+                `<tr id='${ids.rowID}'>
+                    <th scope="row">${sale._id}</th>
+                    <td>${sale.customerID}</td>
+                    <td>${sale.customer.name}</td>
+                    <td>${sale.total}</td>
+                    <td>${sale.date}</td>
+                    <td><button id='${ids.deleteID}' class="btn btn-danger ">Delete</button></td>
+                </tr>`
+            )
+
+            const saleFormTemplate = (article, ids) => (
+                `<tr id='${ids.rowID}'>
+                    <th scope="row">${article.description}</th>
+                    <td>${article.model}</td>
+                    <td><input id='${ids.qtyID}' class="qty" value='0' type="number" min="0" required></input></td>
+                    <td id='price_${article._id}'>${getPrice(article.price)}</td>
+                    <td id='${ids.amountID}' class='rowAmount'>0</td>
+                    <td><button id='${ids.deleteID}' class="btn btn-danger ">Remove</button></td>
+                </tr>`
+            )
+
+
+            const salePaymentsTemplate = (total, months) => {
+                const paymentCash = total / (1 + configuration.financerate * configuration.deadline / 100)
+                const totalAmount = paymentCash * (1 + configuration.financerate * months / 100)
+                const monthlyPayment = totalAmount / months
+                const savings = total - totalAmount
+                paymentChoice.push({
+                    totalAmount : totalAmount,
+                    monthlyPayment : monthlyPayment,
+                    savings : savings
+                })
+                return `
+                    <tr>
+                        <th scope="row">${months} Payments of</th>
+                        <td>$${monthlyPayment}</td>
+                        <td>Total Amount $${totalAmount}</td>
+                        <td>Saving $${savings}</td>
+                        <td><input type="radio" class="form-check-input" value="${months/3 - 1}" id="pay_${months}" name="payment"></td>
+                    </tr>
+                `
+            }
+
+            const getPrice = (price) => {
+                return price * (1 + configuration.financerate * configuration.deadline / 100)
+            }
+
+            const displaySales = (data) => {
+                const tableBody = $('#tableBody')
+                tableBody.html('')
+                data.forEach((sale) => {
+                    let ids = buildIDS(sale)
+                    tableBody.append(saleListTemplate(sale, ids))
+                    deleteSale(sale, ids.rowID, ids.deleteID)
+                })
+            }
+
+            const displayPayments = () => {
+                const tableBody = $('#tableBodyPayments')
+                tableBody.html('')
+                for (let i = 3; i <= configuration.deadline; i += 3) {
+                    tableBody.append(salePaymentsTemplate($('#total').html(), i))
+                }
+            }
+
+            const deleteSale = (sale, rowID, deleteID) => {
+                let deleteBtn = $(`#${deleteID}`)
+                deleteBtn.click(() => {
+                    fetch(`/sale/${sale._id}`, {method : 'delete'}).then((response) => (response.json())).then((data) => {
+                        if(data.ok == 1)
+                            $(`#${rowID}`).remove()
+                    })
+                })
+            }
+
+            const removeArticle = (rowID, deleteID) => {
+                let deleteBtn = $(`#${deleteID}`)
+                deleteBtn.click(() => {
+                    $(`#${rowID}`).remove()
+                    calculateTotal()
+                })
+            }
+
+            const displayMessage = (flag, msg) => {
+                const message = $('#message')
+                if(flag){
+                    message.addClass('alert-success')
+                    message.removeClass('alert-danger')
+                }
+                else{
+                    message.addClass('alert-danger')
+                    message.removeClass('alert-success')
+                }
+                message.html(msg)
+                message.show()
+            }
+
+            const hideMessage = () => {
+                const message = $('#message')
+                message.removeClass('alert-danger')
+                message.removeClass('alert-success')
+                message.html('')
+                message.hide()
+            }
+
+            init()
+        })
+    </script>

@@ -1,0 +1,30 @@
+
+<h1>Customers <a class="btn btn-secondary" href="/customer"><i class="fa fa-plus"></i>Create New</a></h1> 
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Lastname One</th>
+            <th>Lastname Two</th>
+            <th>Rfc</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each list}}
+        <tr>
+            <td>{{this.name}} </td>
+            <td>{{this.lastnameone}}</td>
+            <td>{{this.lastnametwo}}</td>
+            <td>{{this.rfc}}</td>
+            <td>
+                <a  href="/customer/see/{{this._id}}"><i class="fa fa-eye fa-lg" aria-hidden="true"></i></a>
+                <a  href="/customer/{{this._id}}"><i class="fa fa-pencil fa-lg" aria-hidden="true"></i></a>
+                <a  href="/customer/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this Customer?');"><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
+
+
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+
