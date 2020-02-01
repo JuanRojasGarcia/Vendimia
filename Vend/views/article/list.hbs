@@ -1,24 +1,20 @@
-<h1>Articles <a class="btn btn-secondary" href="/article"><i class="fa fa-plus"></i>Create New</a></h1> 
+<h1>Registred Articles <a class="btn btn-primary " style="margin-left: 400px;" href="/article/new"><i class="fa fa-plus"></i>New Article</a></h1> 
 <table class="table table-striped">
     <thead>
         <tr>
+            <th>Article Key</th>
             <th>Description</th>
-            <th>Model</th>
-            <th>Price</th>
-            <th>Stock</th>
         </tr>
     </thead>
     <tbody>
         {{#each list}}
         <tr>
+            <td>{{this._id}}</td>
             <td>{{this.description}} </td>
-            <td>{{this.model}}</td>
-            <td>{{this.price}}</td>
-            <td>{{this.stock}}</td>
             <td>
-                <a  href="/article/see/{{this._id}}"><i class="fa fa-eye fa-lg" aria-hidden="true"></i></a>
-                <a  href="/article/{{this._id}}"><i class="fa fa-pencil fa-lg" aria-hidden="true"></i></a>
-                <a  href="/article/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this Article?');"><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
+                <a  href="/article/see/{{this._id}}"><i class="fa fa-eye fa-lg btn-outline-success" aria-hidden="true"></i></a>
+                <a  href="/article/{{this._id}}"><i class="fa fa-pencil fa-lg btn-outline-warning" aria-hidden="true"></i></a>
+                <a  href="/article/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this Article?');"><i class="fa fa-trash fa-lg btn-outline-danger" aria-hidden="true"></i></a>
 
 
             </td>

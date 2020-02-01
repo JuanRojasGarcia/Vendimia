@@ -120,6 +120,20 @@ app.get('/getConfig', (req, res) => {
     });
 });
 
+app.delete('/deleteConfiguration/:id', (req, res) => {
+    const configID = req.params.id;
+    Configuration.findOneAndDelete({_id : configID}, (err, docs) => {
+        if(err)
+            console.log(err);
+        else{
+            res.json(docs)
+        }
+            
+    })
+})
+
+
+
 app.get('/getArticle', (req, res) => {
     Article.find()
     .exec()

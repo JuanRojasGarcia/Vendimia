@@ -4,8 +4,21 @@ const mongoose = require('mongoose');
 const Customer = mongoose.model('Customer');
 
 router.get('/', (req, res) => {
+    Customer.find((err, docs) => {
+        if (!err) {
+            res.render("customer/list", {
+                list: docs
+            });
+        }
+        else {
+            console.log('error in retrieving customer list :' + err);
+        }
+    });
+});
+
+router.get('/new', (req, res) => {
     res.render("customer/addOrEdit", {
-        viewTitle: "Insert Customer"
+        viewTitle: "New Customer"
     });
 });
 
@@ -17,10 +30,6 @@ router.post('/', (req, res) =>{
 
 });
 
-
-
-
-
 function insertRecord(req, res){
     var customer = new Customer();
     customer.name = req.body.name;
@@ -29,34 +38,23 @@ function insertRecord(req, res){
     customer.rfc = req.body.rfc;
     customer.save((err,doc) =>{
         if (!err)
-            res.redirect('customer/list');
+            res.redirect('/customer');
         else {
             if (err.name == 'ValidationError'){
                 handleValidationError(err, req.body);
                 res.render("customer/addOrEdit", {
-                    viewTitle: "Insert Customer",
+                    viewTitle: "New Customer",
                     customer: req.body
                 });
             }
             else
-            console.log("Error during record insertion : " + err);
+            console.log("Error during customer insertion : " + err);
         }
     });
 
 }
 
-router.get('/list', (req, res) => {
-   Customer.find((err, docs) => {
-       if (!err) {
-           res.render("customer/list", {
-               list: docs
-           });
-       }
-       else {
-           console.log('error in retrieving customer list :' + err);
-       }
-   });
-});
+
 
 function handleValidationError(err,body){
     for(field in err.errors)
@@ -80,7 +78,7 @@ function handleValidationError(err,body){
 
 function UpdateRecord(req, res){
     Customer.findOneAndUpdate({ _id: req.body._id}, req.body, { new: true}, (err,doc) =>{
-        if (!err) { res.redirect('customer/list');}
+        if (!err) { res.redirect('/customer');}
         else{
             if(err.name == 'validationError'){
                 handleValidationError(err, req.body);
@@ -90,7 +88,7 @@ function UpdateRecord(req, res){
                 });
             }
             else
-                console.log('Error during record update: ' + err);
+                console.log('Error during customer update: ' + err);
         }
     });
 }
@@ -123,7 +121,7 @@ router.get('/see/:id', (req, res) => {
 router.get('/delete/:id', (req, res) => {
     Customer.findByIdAndDelete(req.params.id, (err, doc) =>{
         if(!err){
-            res.redirect('/customer/list');
+            res.redirect('/customer');
         }
         else{ console.log('Error in customer delete:' + err);}
     });

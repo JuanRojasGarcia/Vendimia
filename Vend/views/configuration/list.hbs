@@ -1,0 +1,22 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Financing Rate</th>
+            <th>Down Payment</th>
+            <th>Deadline</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each list}}
+        <tr>
+            <td>{{this.financerate}}</td>
+            <td>{{this.downpayment}} </td>
+            <td>{{this.deadline}}</td>
+            <td>
+                <a  href="/configuration/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this configuration?');"><i class="fa fa-trash fa-lg btn-outline-danger" aria-hidden="true"></i></a>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+

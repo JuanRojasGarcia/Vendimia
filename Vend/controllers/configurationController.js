@@ -6,16 +6,12 @@ const Configuration = mongoose.model('Configuration');
 
 router.get('/', (req, res) => {
     res.render("configuration/add", {
-        viewTitle: "Insert Configuration"
-    });
+        viewTitle: "Configuration"
+    })
 });
 
 router.post('/', (req, res) =>{
-    if(req.body._id == '')
         InsertConfiguration(req, res);
-    else
-        DeleteConfiguration(req, res);
-
 });
 
 function InsertConfiguration(req, res){
@@ -42,29 +38,28 @@ function InsertConfiguration(req, res){
 }
 
 function DeleteConfiguration(req, res){
-    var configuration = new Configuration();
-    configuration.financerate = req.body.financerate;
-    configuration.downpayment = req.body.downpayment;
-    configuration.deadline = req.body.deadline;
-    configuration.remove(function (err, configuration) {
-        if (err) return handleError(err);
-        configuration.findById(configuration._id, function (err, configuration) {
-          console.log(configuration) // null
-        })
-      })
+    Configuration.findOneAndDelete({ _id: req.body._id}, req.body, { new: true}, (err,doc) =>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            res.json(result)
+        }
+    });
 }
-// router.get('/list', (req, res) => {
-//    Configuration.find((err, docs) => {
-//        if (!err) {
-//            res.render("configuration/list", {
-//                list: docs
-//            });
-//        }
-//        else {
-//            console.log('error in retrieving Article list :' + err);
-//        }
-//    });
-// });
+
+router.get('/list', (req, res) => {
+   Configuration.find((err, docs) => {
+       if (!err) {
+           res.render("configuration/list", {
+               list: docs
+           });
+       }
+       else {
+           console.log('error in retrieving configuration list :' + err);
+       }
+   });
+});
 
 // Delete Customer
 router.get('/delete/:id', (req, res) => {
@@ -72,26 +67,26 @@ router.get('/delete/:id', (req, res) => {
         if(!err){
             res.redirect('/');
         }
-        else{ console.log('Error in article delete:' + err);}
+        else{ console.log('Error in configuration delete:' + err);}
     });
 });
 
-// function handleValidationError(err,body){
-//     for(field in err.errors)
-//     {
-//         switch (err.errors[field].path){
-//             case 'description':
-//                 body['descriptionError'] = err.errors[field].message;
-//                 break;
-//             case 'price':
-//                 body['priceError'] = err.errors[field].message;
-//                 break;
-//             case 'stock':
-//                 body['stockError'] = err.errors[field].message;
-//                 break;           
-//         }
-//     }
-// }
+function handleValidationError(err,body){
+    for(field in err.errors)
+    {
+        switch (err.errors[field].path){
+            case 'financerate':
+                body['financerateError'] = err.errors[field].message;
+                break;
+            case 'downpayment':
+                body['downpaymentError'] = err.errors[field].message;
+                break;
+            case 'deadline':
+                body['deadlineError'] = err.errors[field].message;
+                break;           
+        }
+    }
+}
 
 // function UpdateArticle(req, res){
 //     Configuration.findOneAndUpdate({ _id: req.body._id}, req.body, { new: true}, (err,doc) =>{

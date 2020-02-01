@@ -1,25 +1,22 @@
 
-<h1>Customers <a class="btn btn-secondary" href="/customer"><i class="fa fa-plus"></i>Create New</a></h1> 
+<h1>Registred Customers <a class="btn btn-primary" href="customer/new" style="margin-left: 300px;"><i class="fa fa-plus"></i>New Customer</a></h1> 
 <table class="table table-striped">
     <thead>
         <tr>
+            <th>Client Key</th>
             <th>Name</th>
-            <th>Lastname One</th>
-            <th>Lastname Two</th>
-            <th>Rfc</th>
         </tr>
     </thead>
     <tbody>
         {{#each list}}
         <tr>
-            <td>{{this.name}} </td>
-            <td>{{this.lastnameone}}</td>
-            <td>{{this.lastnametwo}}</td>
-            <td>{{this.rfc}}</td>
+            <td>{{this._id}}</td>
+            <td>{{this.name}} {{this.lastnameone}} {{this.lastnametwo}}</td>
+
             <td>
-                <a  href="/customer/see/{{this._id}}"><i class="fa fa-eye fa-lg" aria-hidden="true"></i></a>
-                <a  href="/customer/{{this._id}}"><i class="fa fa-pencil fa-lg" aria-hidden="true"></i></a>
-                <a  href="/customer/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this Customer?');"><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
+                <a  href="/customer/see/{{this._id}}"><i class="fa fa-eye fa-lg btn-outline-success" aria-hidden="true"></i></a>
+                <a  href="/customer/{{this._id}}"><i class="fa fa-pencil fa-lg btn-outline-warning" aria-hidden="true"></i></a>
+                <a  href="/customer/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this Customer?');"><i class="fa fa-trash fa-lg btn-outline-danger" aria-hidden="true"></i></a>
 
 
             </td>
@@ -27,4 +24,5 @@
         {{/each}}
     </tbody>
 </table>
+
 

@@ -1,4 +1,4 @@
-<h1>Sales <a class="btn btn-secondary" href="/sales"><i class="fa fa-plus"></i>Create New</a></h1> 
+<h1>Registred Sales <a class="btn btn-primary" style="margin-left: 400px;" href="/sales/new"><i class="fa fa-plus"></i>New Sale</a></h1> 
 <table class="table table-striped">
     <thead>
         <tr>
@@ -19,11 +19,7 @@
             <td>{{this.total}}</td>
             <td>{{this.date}}</td>
             <td>
-                <a  href="/sales/see/{{this._id}}"><i class="fa fa-eye fa-lg" aria-hidden="true"></i></a>
-                <a  href="/sales/{{this._id}}"><i class="fa fa-pencil fa-lg" aria-hidden="true"></i></a>
-                <a  href="/sales/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this Article?');"><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
-
-
+                <a  href="/sales/delete/{{this._id}}" onclick="return confirm('Are you sure to delete this Sale?');"><i class="fa fa-trash fa-lg btn-outline-danger" aria-hidden="true"></i></a>
             </td>
         </tr>
         {{/each}}

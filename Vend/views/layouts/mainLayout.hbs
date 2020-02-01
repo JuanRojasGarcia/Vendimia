@@ -7,14 +7,383 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="../js/sales.js"></script>
     <title>Vendimia</title>
 </head>
 
 <body >
     <div class="row">
-        <div class="col-md-6 offset-md-3" style="background-color: white; margin-top: 10px; padding: 20px;">
+        <div class="col-md-8 offset-md-2" style=" margin-top: 10px; padding: 20px;">
              {{{body}}}
         </div>
     </div>
 </body>
 </html>
+
+<script>
+         $(document).ready(() => {
+
+            
+            const d = new Date()
+            const form = $('#form')
+            let step = 1
+            const inputCustomer = $('#inputCustomer')
+            const selectCustomer = $('#selectCustomer')
+
+            const inputArticle = $('#inputArticle')
+            const selectArticle = $('#selectArticle')
+            let configuration = null;
+            let paymentChoice = []
+            
+            const getConfig = async () => {
+                const wait = await fetch('/getConfig', {method: "get"}).then((response) => (response.json())).then((data) => {
+                    configuration = data[0];
+                    
+                })
+                return await wait
+            }
+
+            $('#date').html(`Date: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`)
+
+            $('#btnAddArticle').click(() => {
+                if(selectArticle.val() == '') return
+                const article = selectArticle.val()
+                inputArticle.prop('disabled', false)
+                selectArticle.prop('disabled', false)
+                inputArticle.val('')
+                resetSelect(selectArticle)
+                const tbody = $('#tableBodyForm')
+                let flag = false
+                if(tbody[0].childNodes && tbody[0].childNodes.length != 0){
+                    tbody[0].childNodes.forEach((tr) => {
+                        flag = tr.id == 'row_'+ article
+                        if(flag) return
+                    })
+                }
+                if(flag) return
+                fetch(`/getArticle/${article}`, {method : 'get'}).then((response) => (response.json())).then((data) => {
+                    const ids = buildIDS(data[0])
+                    tbody.append(saleFormTemplate(data[0], ids))
+                    setQuantity(ids.qtyID, ids.priceID, ids.amountID)
+                    removeArticle(ids.rowID, ids.deleteID)
+                })
+            })
+        
+
+            form.submit(async(e) => {
+                e.preventDefault()
+                hideMessage()
+                //if($('#total').html() == '0') return
+                if($('#selectCustomer option:selected').val() == 'placeholder') {
+                    displayMessage(false, 'You need to select a customer from the selector')
+                    return
+                }
+                if(step == 1){
+                    if(!qtyOverZero()){
+                        displayMessage(false, 'You cannot set Quantity to less than 1')
+                        return
+                    }
+                    let allGood = true
+                    let wait = null
+                    await $('.qty').each(async(_, obj) => {
+                        const inputQty = $(obj)
+                        const articleID = inputQty[0].id.substring(4)
+                        wait = fetch(`/getarticle/${articleID}`, {method : 'get'}).then((response) => (response.json())).then((data) => {
+                            if(data[0].stock < inputQty.val()) allGood = false
+                        })
+                    })
+                    await wait
+                    if(!allGood) {
+                        console.log('fs');
+                        displayMessage(false, 'You are trying to sell more than what you have')
+                        return
+                    }
+                    $('#divNext').removeClass('d-none')
+                    $('#reset').prop('disabled', true)
+                    //disable stuff and show second table
+                    inputArticle.prop('disabled', true)
+                    inputCustomer.prop('disabled', true)
+                    selectArticle.prop('disabled', true)
+                    $('.qty').each((_, obj) => {
+                        $(obj).prop('disabled', true)
+                    })
+                    displayPayments()
+                    step++
+                }
+                else{
+                    const index = $('input[name="payment"]:checked').val();
+                    if(!index) {
+                        displayMessage(false, 'You need to select one payment plan')
+                        return
+                    }
+                    const total = paymentChoice[index].totalAmount
+                    const customerName = inputCustomer.val()
+                    const customerID = selectCustomer.val()
+                    const date = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`
+                    console.log(customerID, customerName, total, date);
+                    fetch('/sales', {
+                        method : 'post',
+                        body : JSON.stringify({
+                            customer : customerID,
+                            customername : customerName,
+                            total : total.toFixed(2),
+                            date : date
+                        }),
+                        headers : {'Content-Type' : 'application/json; charset=utf-8'}
+                    }).then((response) => (response.json())).then((data) => {
+                        displayMessage(true, 'You have successfully registered this sale')
+                    })
+
+                    $('.qty').each((_, obj) => {
+                        const inputQty = $(obj)
+                        const articleID = inputQty[0].id.substring(4)
+                        fetch(`/getarticle/${articleID}`, {method : 'get'}).then((response) => (response.json())).then((data) => {
+                            fetch(`/articleStock/${articleID}`, {
+                                method : 'put',
+                                body : JSON.stringify({stock: data[0].stock - inputQty.val()}),
+                                headers : {'Content-Type' : 'application/json; charset=utf-8'}
+                            })
+                        })
+                    })
+                    //hide second table
+
+                }
+            })
+
+            const qtyOverZero = () => {
+                let flag = true
+                $('.qty').each((_, obj) => {
+                    if(parseInt($(obj).val()) < 1) {
+                        flag = false
+                        return
+                    }
+                })
+                return flag
+            }
+
+            const setQuantity = (qtyID, priceID, amountID) => {
+                const qtyInput = $(`#${qtyID}`)
+                qtyInput.on('input', (e) => {
+                    e.preventDefault()
+                    const amountCell = $(`#${amountID}`)
+                    const price = $(`#${priceID}`)
+                    amountCell.html(qtyInput.val() * price.html())
+                    calculateTotal()
+                })
+            }
+
+            const calculateTotal = () => {
+                let amountSum = 0
+                $('.rowAmount').each((_, obj) => {
+                    amountSum += parseInt( $(obj).html() )
+                })
+                const downpayment = amountSum * configuration.downpayment / 100
+                const dpbonus = downpayment * configuration.financerate * configuration.deadline / 100
+                const total = amountSum - downpayment - dpbonus
+                $('#downpayment').html(downpayment.toFixed(2))
+                $('#dpbonus').html(dpbonus.toFixed(2))
+                $('#total').html(total.toFixed(2))
+            }
+
+            inputCustomer.on('input', (e) => {
+                e.preventDefault()
+                resetSelect(selectCustomer)
+                if(inputCustomer.val().length < 3) return
+                fetch('/sale/customerSuggestion', {
+                    method : 'put',
+                    body : JSON.stringify({
+                        name : inputCustomer.val()
+                    }),
+                    headers: {'Content-Type' : 'application/json; charset=utf-8'}
+                }).then((response) => (response.json())).then((data) => {
+                    if(data.length != 0)
+                        selectCustomer.append(customerSuggestionTemplate(data[0]))
+                })
+            })
+
+            const resetSelect = (select) => {
+                select.empty()
+                select.append('<option value="placeholder" selected>Choose...</option>')
+            }
+
+            inputArticle.on('input', (e) => {
+                e.preventDefault()
+                resetSelect(selectArticle)
+                if(inputArticle.val().length < 3) return
+                fetch('/sale/articleSuggestion', {
+                    method : 'put',
+                    body : JSON.stringify({
+                        description : inputArticle.val()
+                    }),
+                    headers: {'Content-Type' : 'application/json; charset=utf-8'}
+                }).then((response) => (response.json())).then((data) => {
+                    if(data.length != 0)
+                        selectArticle.append(articleSuggestionTemplate(data[0]))
+                })
+            })
+
+            selectCustomer.change(async () => {
+                inputCustomer.val($('#selectCustomer option:selected').text())
+                inputCustomer.prop('disabled', true)
+                selectCustomer.prop('disabled', true)
+                $('#rfc').html(`RFC: ${await getRFC($('#selectCustomer option:selected').val())}`)
+            })
+
+            const getRFC = async (customer) => {
+                let rfc = null
+                let wait = fetch(`/getCustomer/${customer}`, {method: "get"}).then((response) => (response.json())).then((data) => {
+                    rfc = data[0].rfc
+                })
+                await wait
+                return rfc
+            }
+
+            selectArticle.change(() => {
+                if(selectArticle.val() == '') return
+                inputArticle.val($('#selectArticle option:selected').text())
+                inputArticle.prop('disabled', true)
+                selectArticle.prop('disabled', true)
+            })
+
+            const customerSuggestionTemplate = (customer) => {
+                return `
+                    <option value = '${customer._id}'>${customer.name} ${customer.lastnameone} ${customer.lastnametwo}</option>
+                `
+            }
+
+            const articleSuggestionTemplate = (article) => {
+                
+                return `
+                    <option value = '${article._id}'>${article.description}</option>
+                `
+            }
+
+
+
+            const init = async () => {
+                getSales()
+                await getConfig()
+            }
+
+            const buildIDS = (object) => {
+                return {
+                    editID : "edit_" + object._id,
+                    deleteID : "delete_" + object._id,
+                    rowID : "row_" + object._id,
+                    qtyID : 'qty_' + object._id,
+                    priceID : 'price_' + object._id,
+                    amountID : 'amount_' + object._id
+                }
+            }
+
+
+            const getSales = () => {
+                fetch('/getSales', {method: "get"}).then((response) => (response.json())).then((data) => {
+                    displaySales(data)
+                })
+            }
+
+
+            const saleFormTemplate = (article, ids) => (
+                `<tr id='${ids.rowID}'>
+                    <th scope="row">${article.description}</th>
+                    <td>${article.model}</td>
+                    <td><input id='${ids.qtyID}' class="qty" value='0' type="number" min="0" required></input></td>
+                    <td id='price_${article._id}'>${getPrice(article.price)}</td>
+                    <td id='${ids.amountID}' class='rowAmount'>0</td>
+                    <td><button id='${ids.deleteID}' class="btn btn-danger ">Remove</button></td>
+                </tr>`
+            )
+
+
+            const salePaymentsTemplate = (total, months) => {
+                const paymentCash = total / (1 + configuration.financerate * configuration.deadline / 100)
+                const totalAmount = paymentCash * (1 + configuration.financerate * months / 100)
+                const monthlyPayment = totalAmount / months
+                const savings = total - totalAmount
+                paymentChoice.push({
+                    totalAmount : totalAmount,
+                    monthlyPayment : monthlyPayment,
+                    savings : savings
+                })
+                return `
+                    <tr>
+                        <th scope="row">${months} Payments of</th>
+                        <td>$${monthlyPayment.toFixed(2)}</td>
+                        <td>Total Amount $${totalAmount.toFixed(2)}</td>
+                        <td>Saving $${savings.toFixed(2)}</td>
+                        <td><input type="radio" class="form-check-input" value="${months/3 - 1}" id="pay_${months}" name="payment"></td>
+                    </tr>
+                `
+            }
+
+            const getPrice = (price) => {   
+                let picee =  price * (1 + configuration.financerate * configuration.deadline / 100);              
+                picee = picee.toFixed(2);
+                return picee
+            }
+
+            const displaySales = (data) => {
+                const tableBody = $('#tableBody')
+                tableBody.html('')
+                data.forEach((sale) => {
+                    let ids = buildIDS(sale)
+                    tableBody.append(saleListTemplate(sale, ids))
+                    deleteSale(sale, ids.rowID, ids.deleteID)
+                })
+            }
+
+            const displayPayments = () => {
+                const tableBody = $('#tableBodyPayments')
+                tableBody.html('')
+                for (let i = 3; i <= configuration.deadline; i += 3) {
+                    tableBody.append(salePaymentsTemplate($('#total').html(), i))
+                }
+            }
+
+            const deleteSale = (sale, rowID, deleteID) => {
+                let deleteBtn = $(`#${deleteID}`)
+                deleteBtn.click(() => {
+                    fetch(`/sale/${sale._id}`, {method : 'delete'}).then((response) => (response.json())).then((data) => {
+                        if(data.ok == 1)
+                            $(`#${rowID}`).remove()
+                    })
+                })
+            }
+
+            const removeArticle = (rowID, deleteID) => {
+                let deleteBtn = $(`#${deleteID}`)
+                deleteBtn.click(() => {
+                    $(`#${rowID}`).remove()
+                    calculateTotal()
+                })
+            }
+
+            const displayMessage = (flag, msg) => {
+                const message = $('#message')
+                if(flag){
+                    message.addClass('alert-success')
+                    message.removeClass('alert-danger')
+                }
+                else{
+                    message.addClass('alert-danger')
+                    message.removeClass('alert-success')
+                }
+                message.html(msg)
+                message.show()
+            }
+
+            const hideMessage = () => {
+                const message = $('#message')
+                message.removeClass('alert-danger')
+                message.removeClass('alert-success')
+                message.html('')
+                message.hide()
+            }
+
+            init()
+        })
+    </script>

@@ -4,10 +4,19 @@ const mongoose = require('mongoose');
 const Article = mongoose.model('Article');
 
 router.get('/', (req, res) => {
-    res.render("article/addOrEdit", {
-        viewTitle: "Insert Article"
+    Article.find((err, docs) => {
+        if (!err) {
+            res.render("article/list", {
+                list: docs
+            });
+        }
+        else {
+            console.log('error in retrieving Article list :' + err);
+        }
     });
 });
+
+
 
 router.post('/', (req, res) =>{
     if(req.body._id == '')
@@ -25,12 +34,12 @@ function insertArticle(req, res){
     article.stock = req.body.stock;
     article.save((err,doc) =>{
         if (!err)
-            res.redirect('article/list');
+            res.redirect('/article');
         else {
             if (err.name == 'ValidationError'){
                 handleValidationError(err, req.body);
                 res.render("article/addOrEdit", {
-                    viewTitle: "Insert Article",
+                    viewTitle: "New Article",
                     article: req.body
                 });
             }
@@ -41,18 +50,13 @@ function insertArticle(req, res){
 
 }
 
-router.get('/list', (req, res) => {
-   Article.find((err, docs) => {
-       if (!err) {
-           res.render("article/list", {
-               list: docs
-           });
-       }
-       else {
-           console.log('error in retrieving Article list :' + err);
-       }
-   });
+router.get('/new', (req, res) => {
+    res.render("article/addOrEdit", {
+        viewTitle: "New Article"
+    });
 });
+
+
 
 function handleValidationError(err,body){
     for(field in err.errors)
@@ -73,7 +77,7 @@ function handleValidationError(err,body){
 
 function UpdateArticle(req, res){
     Article.findOneAndUpdate({ _id: req.body._id}, req.body, { new: true}, (err,doc) =>{
-        if (!err) { res.redirect('article/list');}
+        if (!err) { res.redirect('/article');}
         else{
             if(err.name == 'validationError'){
                 handleValidationError(err, req.body);
@@ -116,7 +120,7 @@ router.get('/see/:id', (req, res) => {
 router.get('/delete/:id', (req, res) => {
     Article.findByIdAndDelete(req.params.id, (err, doc) =>{
         if(!err){
-            res.redirect('/article/list');
+            res.redirect('/article');
         }
         else{ console.log('Error in article delete:' + err);}
     });

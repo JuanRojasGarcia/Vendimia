@@ -3,18 +3,31 @@
 <input type="hidden" name="_id" value="{{configuration._id}}">
     <div class="form-group">
         <label>Finance Rate</label>
-        <input type="text" class="form-control" name="financerate" placeholder="Finance Rate" value="{{configuration.financerate}}">
+        <input type="number" min="2.8" max="2.8" class="form-control" name="financerate" id="financeRateInput" placeholder="Finance Rate" value="{{configuration.financerate}}">
+        <div class="text-danger">
+            {{configuration.financerateError}}
+        </div>
     </div>
     <div class="form-group">
         <label>Down Payment</label>
-        <input type="number" min="0" max="100" class="form-control" name="downpayment" placeholder="Down Payment" value="{{configuration.downpayment}}">
+        <input type="number" min="0" max="100" class="form-control" id="downpaymentInput" name="downpayment" placeholder="Down Payment" value="{{configuration.downpayment}}">
+        <div class="text-danger">
+            {{configuration.downpaymentError}}
+        </div>
     </div>
     <div class="form-group">
         <label>Deadline</label>
-        <input type="number" min="3" max="12" class="form-control" name="deadline" placeholder="Deadline" value="{{configuration.deadline}}">
+        <input type="number" min="3" max="12" class="form-control" id="deadlineInput" name="deadline" placeholder="Deadline" value="{{configuration.deadline}}">
+        <div class="text-danger">
+            {{configuration.deadlineError}}
+        </div>
     </div>
     <div class="form-group">
         <a class="btn btn-secondary" href="/"><i ></i>Cancel</a>
-        <button type="submit" class="btn btn-info"><i ></i>Save</button>
+        <button type="submit" class="btn btn-info" id="btnSaved"><i ></i>Save</button>
+        <a class="btn btn-danger" href="/configuration/list">Delete</a>
     </div>
 </form>
+
+
+    

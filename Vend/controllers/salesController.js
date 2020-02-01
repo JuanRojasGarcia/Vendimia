@@ -5,8 +5,21 @@ const Sales = mongoose.model('Sales');
 const Customer = mongoose.model('Customer');
 
 router.get('/', (req, res) => {
+    Sales.find((err, docs) => {
+        if (!err) {
+            res.render("sales/list", {
+                list: docs
+            });
+        }
+        else {
+            console.log('error in retrieving Article list :' + err);
+        }
+    });
+});
+
+router.get('/new', (req, res) => {
     res.render("sales/add", {
-        viewTitle: "Insert Sale"
+        viewTitle: "New Sale"
     });
 });
 
@@ -84,18 +97,7 @@ router.post('/', (req, res) =>{
 
 // }
 
-router.get('/list', (req, res) => {
-    Sales.find((err, docs) => {
-       if (!err) {
-           res.render("sales/list", {
-               list: docs
-           });
-       }
-       else {
-           console.log('error in retrieving Article list :' + err);
-       }
-   });
-});
+
 
 
 
@@ -163,9 +165,9 @@ router.get('/:id', (req, res) => {
 router.get('/delete/:id', (req, res) => {
     Sales.findByIdAndDelete(req.params.id, (err, doc) =>{
         if(!err){
-            res.redirect('/sales/list');
+            res.redirect('/sales');
         }
-        else{ console.log('Error in article delete:' + err);}
+        else{ console.log('Error in sale delete:' + err);}
     });
 });
 
